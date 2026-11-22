@@ -20,7 +20,7 @@ function! s:reset() abort
   enew!
   call setline(1, ['alpha beta gamma', 'delta epsilon zeta', 'eta theta iota', ''])
   execute 'file ' . fnameescape(s:tmp . '/buffer.txt')
-  call fluoro#clear()
+  call fluoro#erase_highlights()
 endfunction
 
 " --- palette / setup -------------------------------------------------------
@@ -150,7 +150,7 @@ call fluoro#set_note(fluoro#items()[0].id, 'remember this')
 call assert_equal(2, fluoro#store#save())
 let s:store_file = fluoro#store#file_for(bufnr('%'))
 call assert_true(filereadable(s:store_file))
-call fluoro#clear()
+call fluoro#erase_highlights()
 call assert_equal(0, fluoro#count())
 call assert_equal(2, fluoro#store#load())
 let s:items = fluoro#items()
@@ -160,12 +160,12 @@ call assert_equal('pink', s:items[1].color)
 call assert_equal(3, s:items[1].end_lnum)
 call assert_equal('remember this', s:items[0].note)
 
-" --- clear buffer removes storage -----------------------------------------
+" --- erase buffer removes storage -----------------------------------------
 call s:reset()
 call fluoro#add(1, 1, 1, 3, 'blue')
 call fluoro#store#save()
 call assert_true(filereadable(fluoro#store#file_for(bufnr('%'))))
-call fluoro#clear_buffer()
+call fluoro#erase_buffer()
 call assert_false(filereadable(fluoro#store#file_for(bufnr('%'))))
 
 " --- unnamed buffers are not persisted ------------------------------------
@@ -216,7 +216,7 @@ let s:id = fluoro#add(1, 1, 1, 5, 'hl_y')
 call assert_true(s:id > 0)
 call assert_equal('hl_y', fluoro#items()[0].color)
 call fluoro#store#save()
-call fluoro#clear()
+call fluoro#erase_highlights()
 call assert_equal(1, fluoro#store#load())
 call assert_equal('hl_y', fluoro#items()[0].color)
 
@@ -303,7 +303,7 @@ call fluoro#note_cursor_leave()
 call assert_equal(0, len(prop_list(1, {'types': ['fluoro_note']})))
 call cursor(1, 8)
 call fluoro#note_cursor()
-call fluoro#clear()
+call fluoro#erase_highlights()
 call assert_equal(0, len(prop_list(1, {'types': ['fluoro_note']})))
 call assert_equal('', fluoro#get_note(s:id))
 

@@ -396,7 +396,7 @@ fluoro#erase_range({sl}, {sc}, {el}, {ec} [, {bufnr}])
                                             *fluoro#erase_range()*
   Remove highlights under the cursor or intersecting a range.
 
-fluoro#clear([{bufnr}])                     *fluoro#clear()*
+fluoro#erase_highlights([{bufnr}])          *fluoro#erase_highlights()*
   Remove all fluoro highlights from a buffer.
 
 fluoro#items([{bufnr}])                     *fluoro#items()*

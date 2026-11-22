@@ -42,8 +42,8 @@ command! -range -nargs=? -complete=customlist,fluoro#complete
 command! -range -nargs=0 FluoroErase
       \ call fluoro#cmd_erase(<range>, <line1>, <line2>)
 
-command! -nargs=0 FluoroEraseBuffer call fluoro#clear_buffer()
-command! -nargs=0 FluoroEraseEverything call fluoro#clear_all()
+command! -nargs=0 FluoroEraseBuffer call fluoro#erase_buffer()
+command! -nargs=0 FluoroEraseEverything call fluoro#erase_everything()
 command! -nargs=0 FluoroList        call fluoro#list()
 command! -nargs=0 FluoroInfo        call fluoro#info()
 command! -nargs=? FluoroNext        call fluoro#next(empty(<q-args>) ? 1 : str2nr(<q-args>))

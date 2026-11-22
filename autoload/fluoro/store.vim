@@ -113,7 +113,7 @@ function! fluoro#store#load(...) abort
   endif
 
   " Start from a clean slate so loading twice cannot duplicate highlights.
-  call fluoro#clear(bufnr)
+  call fluoro#erase_highlights(bufnr)
 
   let info = getbufinfo(bufnr)
   let last_line = empty(info) ? 1 : get(info[0], 'linecount', 1)
@@ -165,7 +165,7 @@ function! fluoro#store#forget(...) abort
 endfunction
 
 " Delete all stored highlights.
-function! fluoro#store#clear_all() abort
+function! fluoro#store#erase_everything() abort
   let removed = 0
   for path in glob(fluoro#store#dir() . '/*.json', 1, 1)
     if delete(path) == 0

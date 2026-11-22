@@ -370,7 +370,7 @@ function! fluoro#erase_visual() abort
 endfunction
 
 " Remove every highlight from {bufnr} (default: current buffer).
-function! fluoro#clear(...) abort
+function! fluoro#erase_highlights(...) abort
   call fluoro#init()
   let bufnr = a:0 ? a:1 : bufnr('%')
   if !bufexists(bufnr) || !bufloaded(bufnr)
@@ -387,22 +387,22 @@ function! fluoro#clear(...) abort
   return prop_remove({'types': types, 'all': 1, 'bufnr': bufnr})
 endfunction
 
-function! fluoro#clear_buffer() abort
-  let total = fluoro#clear()
+function! fluoro#erase_buffer() abort
+  let total = fluoro#erase_highlights()
   call fluoro#store#forget(bufnr('%'))
-  echo printf('fluoro: cleared %d highlight(s)', total)
+  echo printf('fluoro: erased %d highlight(s)', total)
   return total
 endfunction
 
-function! fluoro#clear_all() abort
+function! fluoro#erase_everything() abort
   let total = 0
   for info in getbufinfo()
     if info.loaded
-      let total += fluoro#clear(info.bufnr)
+      let total += fluoro#erase_highlights(info.bufnr)
     endif
   endfor
-  call fluoro#store#clear_all()
-  echo printf('fluoro: cleared %d highlight(s) from all buffers', total)
+  call fluoro#store#erase_everything()
+  echo printf('fluoro: erased %d highlight(s) from all buffers', total)
   return total
 endfunction
 
