@@ -65,7 +65,7 @@ Explicit commands:
 :'<,'>FluoroHighlight green
 :FluoroHighlight blue          " word under the cursor
 :FluoroErase                   " remove highlight under the cursor
-:FluoroClear                   " remove all in this buffer
+:FluoroEraseBuffer             " remove all in this buffer
 :FluoroClearAll                " remove all everywhere
 :FluoroNext 3                  " jump three highlights forward
 :FluoroColor pink              " set the pen used by :FluoroHighlight

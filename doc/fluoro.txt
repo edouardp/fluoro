@@ -84,8 +84,8 @@ as virtual text above the highlight when the mouse hovers over it in the GUI
             Remove the highlight(s) under the cursor, or every highlight that
             intersects the given range.
 
-                                                                    *:FluoroClear*
-:FluoroClear
+                                                              *:FluoroEraseBuffer*
+:FluoroEraseBuffer
             Remove all highlights from the current buffer and delete its
             stored highlights.
 
