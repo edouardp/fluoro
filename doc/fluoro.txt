@@ -89,8 +89,8 @@ as virtual text above the highlight when the mouse hovers over it in the GUI
             Remove all highlights from the current buffer and delete its
             stored highlights.
 
-                                                                 *:FluoroClearAll*
-:FluoroClearAll
+                                                             *:FluoroEraseEverything*
+:FluoroEraseEverything
             Remove all highlights from every buffer and delete all stored
             highlights.
 
