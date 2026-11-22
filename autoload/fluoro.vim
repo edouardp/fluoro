@@ -1269,6 +1269,9 @@ function! s:create_label_popup(item, render, bufnr) abort
   let winid = index(wins, win_getid()) >= 0 ? win_getid() : wins[0]
   let line_length = s:byte_len(a:bufnr, a:item.start_lnum)
   let col = max([1, min([a:item.start_col, max([1, line_length])])])
+  " Make sure the just-added virtual text has been laid out, otherwise
+  " screenpos() can return a stale row.
+  redraw
   let position = screenpos(winid, a:item.start_lnum, col)
   if position.row <= 0 || position.col <= 0
     return 0
