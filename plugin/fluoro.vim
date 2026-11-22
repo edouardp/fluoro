@@ -136,10 +136,6 @@ augroup fluoro
   endif
   autocmd BufLeave,WinLeave * call fluoro#note_hide()
   autocmd InsertEnter * call fluoro#note_hide()
-  autocmd VimResized * call fluoro#note_hide()
-  if exists('##WinScrolled')
-    autocmd WinScrolled * call fluoro#note_hide()
-  endif
   if g:fluoro_autoload
     autocmd BufReadPost * call fluoro#store#load(str2nr(expand('<abuf>')))
   endif

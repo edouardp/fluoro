@@ -270,11 +270,9 @@ the bottom border is placed above the first column of the highlighted text: >
    a body of note text, wrapped as needed
   ──┬────────────────────────────────────
 <
-Only the word `Note` is drawn in the highlight's color; the line-drawing
-characters use the normal note style.  Vim virtual text can only apply one
-highlight group per line, so fluoro overlays the label with a tiny popup
-(requires |+popupwin|).  Without popup support the label is drawn in the
-normal note style.
+The whole top border, including the word `Note`, uses the normal note style.
+Vim virtual text can only apply one highlight group per line, so the label
+cannot be colored independently of the line-drawing characters.
 
 Set `g:fluoro_note_label` to change the word `Note`.
 

@@ -28,7 +28,6 @@ let s:color_by_type = {}
 let s:current_color = ''
 let s:next_id       = 1000000
 let s:active_note   = {}
-let s:group_by_color = {}
 
 " ---------------------------------------------------------------------------
 " Setup
@@ -577,9 +576,6 @@ function! fluoro#note_hover() abort
   endif
   let mouse = getmousepos()
   let winid = get(mouse, 'winid', 0)
-  if winid > 0 && !empty(s:active_note) && get(s:active_note, 'popup', 0) == winid
-    return
-  endif
   let lnum = get(mouse, 'line', 0)
   let col = get(mouse, 'column', 0)
   if winid <= 0 || lnum <= 0 || col <= 0
@@ -846,7 +842,6 @@ function! s:define_color(color) abort
           \ 'priority': get(g:, 'fluoro_priority', 10),
           \ })
   endif
-  let s:group_by_color[a:color] = group
   let s:type_by_color[a:color] = type
   let s:color_by_type[type] = a:color
   return type
@@ -1100,11 +1095,7 @@ function! s:show_note(item, bufnr) abort
         \ 'lines': render.lines,
         \ 'pad': render.pad,
         \ 'lnum': a:item.start_lnum,
-        \ 'popup': 0,
         \ }
-  if render.block
-    let s:active_note.popup = s:create_label_popup(a:item, render, a:bufnr)
-  endif
 endfunction
 
 " Build the virtual text for a note.  The 'block' style is a multi-line box:
@@ -1146,8 +1137,6 @@ function! s:render_block(item, bufnr, text) abort
         \ 'pad': 0,
         \ 'block': 1,
         \ 'label': label,
-        \ 'start_display': start_display,
-        \ 'group': get(s:group_by_color, a:item.color, 'FluoroNote'),
         \ }
 endfunction
 
@@ -1252,68 +1241,12 @@ function! s:format_note(text) abort
   return get(presets, style, presets.plain)
 endfunction
 
-" Virtual text can only use one highlight group per line, so draw the label in
-" the highlight color with a tiny popup laid exactly over the word "Note".
-function! s:create_label_popup(item, render, bufnr) abort
-  if !a:render.block || empty(get(a:render, 'label', ''))
-    return 0
-  endif
-  if !exists('*popup_create')
-    return 0
-  endif
-
-  let wins = win_findbuf(a:bufnr)
-  if empty(wins)
-    return 0
-  endif
-  let winid = index(wins, win_getid()) >= 0 ? win_getid() : wins[0]
-  let line_length = s:byte_len(a:bufnr, a:item.start_lnum)
-  let col = max([1, min([a:item.start_col, max([1, line_length])])])
-  " Make sure the just-added virtual text has been laid out, otherwise
-  " screenpos() can return a stale row.
-  redraw
-  let position = screenpos(winid, a:item.start_lnum, col)
-  if position.row <= 0 || position.col <= 0
-    return 0
-  endif
-
-  let text_start = position.col - (a:render.start_display - 1)
-  let row = position.row - len(a:render.lines)
-  let col = text_start + 3
-  if row < 1 || col < 1
-    return 0
-  endif
-
-  let group = empty(a:render.group) ? 'FluoroNote' : a:render.group
-  try
-    return popup_create(a:render.label, {
-          \ 'line': row,
-          \ 'col': col,
-          \ 'pos': 'topleft',
-          \ 'highlight': group,
-          \ 'border': [0, 0, 0, 0],
-          \ 'padding': [0, 0, 0, 0],
-          \ 'wrap': 0,
-          \ 'zindex': 300,
-          \ 'mapping': 0,
-          \ 'scrollbar': 0,
-          \ 'close': 'none',
-          \ })
-  catch
-    return 0
-  endtry
-endfunction
-
 function! s:hide_note() abort
   if empty(s:active_note)
     return
   endif
   let bufnr = s:active_note.bufnr
-  let popup = get(s:active_note, 'popup', 0)
   let s:active_note = {}
-  if popup > 0 && exists('*popup_getpos') && !empty(popup_getpos(popup))
-    call popup_close(popup)
-  endif
   if bufexists(bufnr) && bufloaded(bufnr)
     call prop_remove({'type': 'fluoro_note', 'all': 1, 'bufnr': bufnr})
   endif

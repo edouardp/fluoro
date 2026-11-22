@@ -106,11 +106,10 @@ The default style is `block`, a multi-line box above the highlight:
 
 The box always starts in the first column.  Its width is the width of the
 widest line touched by the highlight + 2, the content is indented one space,
-and `┬` points at the first column of the highlighted text.  Only the word
-`Note` uses the highlight's color; the line-drawing characters use the note
-style.  Because Vim virtual text only supports one highlight group per line,
-the colored label is a tiny popup overlay (requires `+popupwin`); without it
-the label uses the normal note style.  Change the label with
+and `┬` points at the first column of the highlighted text.  The whole top
+border, including the word `Note`, uses the normal note style; Vim virtual
+text only supports one highlight group per line, so the label cannot be
+colored independently of the line-drawing characters.  Change the label with
 `g:fluoro_note_label` (default `Note`).
 
 If you prefer a single-line frame, pick a preset with `g:fluoro_note_style`
