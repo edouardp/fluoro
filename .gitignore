@@ -1,0 +1,8 @@
+*.swp
+*.swo
+test/tmp/
+test/results.txt
+test/results-mappings.txt
+doc/tags
+tags
+.DS_Store

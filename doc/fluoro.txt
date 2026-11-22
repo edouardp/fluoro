@@ -1,0 +1,447 @@
+*fluoro.txt*  Fluorescent highlights that stick to your text
+*fluoro*
+
+==============================================================================
+CONTENTS                                                    *fluoro-contents*
+
+  1. Introduction ........................ |fluoro-introduction|
+  2. Installation ........................ |fluoro-installation|
+  3. Usage ............................... |fluoro-usage|
+  4. Commands ............................ |fluoro-commands|
+  5. Mappings ............................ |fluoro-mappings|
+  6. Colors .............................. |fluoro-colors|
+  7. Notes ............................... |fluoro-notes|
+  8. Persistence ......................... |fluoro-persistence|
+  9. Configuration ....................... |fluoro-configuration|
+ 10. Functions ........................... |fluoro-functions|
+ 11. License ............................. |fluoro-license|
+
+==============================================================================
+1. INTRODUCTION                                             *fluoro-introduction*
+
+Fluoro marks ranges of text with bright, fluorescent highlights.  Unlike
+matchadd() or syntax highlighting, the marks are real Vim text properties.
+They move with the text when you insert or delete lines above them, survive
+undo/redo, and can be restored when the file is opened again.
+
+The default palette has the four classic fluoro pen colors: yellow, green,
+blue, and pink.  The first color is always yellow.
+
+Requires Vim with |+textprop| (Vim 8.2 or later).  Neovim is not supported
+because it does not implement Vim's text properties.
+
+==============================================================================
+2. INSTALLATION                                             *fluoro-installation*
+
+Using vim-plug: >
+  Plug 'edouardp/fluoro'
+<
+Then run: >
+  :PlugInstall
+<
+Or add the checkout to 'runtimepath' manually: >
+  set runtimepath^=~/path/to/fluoro
+  runtime plugin/fluoro.vim
+<
+Requires no other plugins.
+
+==============================================================================
+3. USAGE                                                        *fluoro-usage*
+
+Visual mode: select some text and press `,,`.  The selection is highlighted
+in yellow (or recolored if it was already highlighted) and visual mode ends.
+
+Normal mode: put the cursor on a word and press `,,`.  The word is highlighted
+in yellow.  Press `,,` again on the highlight to cycle:
+
+  yellow -> green -> blue -> pink -> removed
+
+The cycle always follows that order.  Highlighting a new range always starts
+at yellow, regardless of which color was used last.
+
+Use |:FluoroHighlight| to choose a color explicitly, and |:FluoroColor| to
+change the default pen used by commands and |<Plug>| mappings.
+
+A highlight can also carry a note.  Use |:FluoroNote| to set one; it is shown
+as virtual text above the highlight when the mouse hovers over it in the GUI
+(or when the cursor rests on it in a terminal).  See |fluoro-notes|.
+
+==============================================================================
+4. COMMANDS                                                 *fluoro-commands*
+
+                                                              *:FluoroHighlight*
+                                                              *:Fluoro*
+:[range]FluoroHighlight [{color}]
+            Highlight the range.  When called from Visual mode the exact
+            selected columns are used; an explicit range means whole lines.
+            Without a range, the word under the cursor is used.  {color}
+            defaults to the current pen (`:FluoroColor`).  Highlighting the
+            same range in the same color removes it.  A different color
+            recolors the existing highlight.
+
+                                                                    *:FluoroErase*
+:[range]FluoroErase
+            Remove the highlight(s) under the cursor, or every highlight that
+            intersects the given range.
+
+                                                                    *:FluoroClear*
+:FluoroClear
+            Remove all highlights from the current buffer and delete its
+            stored highlights.
+
+                                                                 *:FluoroClearAll*
+:FluoroClearAll
+            Remove all highlights from every buffer and delete all stored
+            highlights.
+
+                                                                     *:FluoroList*
+:FluoroList
+            Fill the quickfix list with the highlights in the current buffer
+            and open the quickfix window.
+
+                                                                     *:FluoroInfo*
+:FluoroInfo
+            Describe the highlight(s) under the cursor.
+
+                                                                     *:FluoroNext*
+:[count]FluoroNext
+            Jump to the next highlight in the buffer, wrapping around at the
+            end.  Accepts an optional count argument, e.g. `:FluoroNext 3`.
+
+                                                                     *:FluoroPrev*
+:[count]FluoroPrev
+            Jump to the previous highlight, wrapping around at the start.
+            When the cursor is anywhere inside a highlight, that highlight
+            counts as the current one, so this moves to the highlight before
+            it rather than to its own start.
+
+                                                                    *:FluoroCycle*
+:FluoroCycle
+            Advance the color of the highlight under the cursor without
+            turning it off after the last color.
+
+                                                                    *:FluoroColor*
+:FluoroColor [{color}]
+            Without an argument, advance the pen to the next palette color.
+            With an argument, select that color.  The pen is used by
+            |:FluoroHighlight| when no color is given.
+
+                                                                     *:FluoroNote*
+:FluoroNote [{text}]
+            Attach {text} to the highlight under the cursor.  Without an
+            argument, prompt for the text, prefilled with the current note.
+            Submitting an empty note removes it.
+
+                                                                *:FluoroNoteClear*
+:FluoroNoteClear
+            Remove the note from the highlight under the cursor.
+
+                                                                 *:FluoroNoteShow*
+:FluoroNoteShow
+            Show the note for the highlight under the cursor.  Useful in a
+            terminal, where notes otherwise appear after |CursorHold|.
+
+                                                                     *:FluoroSave*
+:FluoroSave
+            Store the current buffer's highlights now (see
+            |fluoro-persistence|).
+
+                                                                     *:FluoroLoad*
+:FluoroLoad
+            Restore the current buffer's stored highlights now.
+
+==============================================================================
+5. MAPPINGS                                                 *fluoro-mappings*
+
+Defaults (disable with `g:fluoro_default_mappings = 0`):
+
+  `,,` (Normal)       Highlight the word under the cursor.  On an existing
+                      highlight, cycle yellow -> green -> blue -> pink ->
+                      removed.
+  `,,` (Visual)       Highlight the selection in yellow and leave Visual
+                      mode.
+  `,n` (Normal)       Set or edit the note on the highlight under the cursor.
+  `,N` (Normal)       Remove that note.
+  `]f` (Normal)       Next highlight.
+  `[f` (Normal)       Previous highlight.
+  `gF` (Visual)       Same as `,,` in Visual mode.
+
+Every default is only installed when the key sequence is not already mapped.
+The `<Plug>` mappings are always available:
+
+  <Plug>(fluoro-cycle)              Normal `,,` behavior
+  <Plug>(fluoro-highlight)          Visual: current pen
+  <Plug>(fluoro-highlight-first)    Visual: first palette color (yellow)
+  <Plug>(fluoro-highlight-{color})  Visual: a specific color, e.g.
+                                    <Plug>(fluoro-highlight-yellow)
+  <Plug>(fluoro-erase)              Normal/Visual: erase
+  <Plug>(fluoro-next)               Next highlight
+  <Plug>(fluoro-prev)               Previous highlight
+  <Plug>(fluoro-info)               Describe highlight under cursor
+  <Plug>(fluoro-note)               Set a note (prompts)
+  <Plug>(fluoro-note-clear)         Remove the note
+  <Plug>(fluoro-note-show)          Show the note under the cursor
+  <Plug>(fluoro-note-click)         Same, for use after a mouse click
+
+Default mouse mapping (only when not already mapped):
+
+  <LeftMouse> (Normal)  Click normally, then show the note under the cursor.
+
+Example: use `<Leader>f` instead of `,,` in Visual mode. >
+  xmap <Leader>f <Plug>(fluoro-highlight-first)
+<
+==============================================================================
+6. COLORS                                                      *fluoro-colors*
+
+The default palette, in cycling order: >
+  yellow, green, blue, pink
+<
+Each color has a highlight group named `FluoroYellow`, `FluoroGreen`,
+`FluoroBlue`, or `FluoroPink`.  Define these groups before the plugin loads to
+replace the built-in colors, or configure the palette directly.
+
+g:fluoro_palette                                           *g:fluoro_palette*
+  A Dictionary that merges over the default palette.  Keys are color names.
+  Values are either a Dictionary of highlight attributes or the name of an
+  existing highlight group.  Example: >
+    let g:fluoro_palette = {
+          \ 'yellow': {'ctermbg': '226', 'ctermfg': '16',
+          \            'guibg': '#f6f65a', 'guifg': '#101010'},
+          \ 'review': 'Search',
+          \ }
+<
+  `review` is appended after the default colors, so it participates in the
+  `,,` cycle after pink.  `:FluoroColor review` and `:FluoroHighlight review`
+  also work.
+
+Ad-hoc colors:
+  Any highlight group name is accepted as a color, even if it is not in the
+  palette: >
+    :'<,'>FluoroHighlight hl_y
+<
+  Such colors are persisted and can be cycled to the first palette color,
+  but they do not become part of the `,,` cycle.
+
+==============================================================================
+7. NOTES                                                        *fluoro-notes*
+
+Every highlight can have one note.  A note is plain text; newlines and tabs
+are flattened into spaces, then the text is wrapped to fit the box.  It is
+stored with the highlight and survives reloads.
+
+When a note is shown, it is attached as virtual text just above the first line
+of the highlight.  It is hidden again as soon as the pointer (or cursor)
+leaves the highlight.
+
+  GUI
+    Moving the mouse over a highlight shows its note.  This uses the
+    |<MouseMove>| event, which requires 'mousemoveevent'.  With
+    `g:fluoro_note_mouse = 1` (the default) fluoro enables that option and
+    installs a <MouseMove> mapping when one is not already present.
+
+    Clicking a highlight also shows its note immediately.  When <LeftMouse>
+    is not already mapped, fluoro installs a Normal-mode mapping that repeats
+    the click and then calls <Plug>(fluoro-note-click).
+
+  Terminal
+    Terminal Vim does not report mouse movement, so the note is shown after
+    |CursorHold| (when the cursor has been still for 'updatetime'
+    milliseconds) and hidden on |CursorMoved|.  Disable this with
+    `g:fluoro_note_cursor = 0`.
+
+Commands:
+
+  |:FluoroNote|        set or edit the note under the cursor
+  |:FluoroNoteClear|   remove it
+  |:FluoroNoteShow|    force it to be shown now
+
+Examples: >
+  :FluoroNote call this again after the refactor
+  :FluoroNote
+  :FluoroNoteClear
+<
+Framing:
+The default (`block`) draws a multi-line box.  It always starts in the first
+column.  Its width is the width of the widest line touched by the highlight,
+plus two.  Content is indented by one space and wrapped to fit.  The `┬` in
+the bottom border is placed above the first column of the highlighted text: >
+
+  ── Note ────────────────────────────────
+   a body of note text, wrapped as needed
+  ──┬────────────────────────────────────
+<
+Only the word `Note` is drawn in the highlight's color; the line-drawing
+characters use the normal note style.  Vim virtual text can only apply one
+highlight group per line, so fluoro overlays the label with a tiny popup
+(requires |+popupwin|).  Without popup support the label is drawn in the
+normal note style.
+
+Set `g:fluoro_note_label` to change the word `Note`.
+
+Alternatively, use a single-line frame.  Select a preset with
+`g:fluoro_note_style`:
+
+  preset         looks like
+  ------         ----------
+  plain          ✎ note text
+  bracket        【 ✎ note text 】
+  square         [ ✎ note text ]
+  bar            ▌ ✎ note text
+  pill           ▐ ✎ note text ▌
+  box            ╭─ ✎ note text ─╮
+  box-bottom     ╰─ ✎ note text ─╯
+  double         ╔═ ✎ note text ═╗
+  dashed         ┄┄ ✎ note text ┄┄
+  callout        ▼ ✎ note text
+  arrow          ▸ ✎ note text
+  notch          ──────⌄────── ✎ note text
+  notch-triangle ──────▾────── ✎ note text
+  notch-double   ══════╦══════ ✎ note text
+  notch-heavy    ━━━━━━┳━━━━━━ ✎ note text
+  notch-diagonal ──────╲╱────── ✎ note text
+
+The single-line prefix defaults to a pencil glyph.  Change it with: >
+  let g:fluoro_note_prefix = 'NOTE: '
+<
+Or supply your own left/right strings: >
+  let g:fluoro_note_style = ['〈 ', ' 〉']
+  let g:fluoro_note_style = '╰─ '          " left side only
+  let g:fluoro_note_style = 'block'        " the default multi-line box
+<
+Notes are also included in |:FluoroList|.
+
+==============================================================================
+8. PERSISTENCE                                             *fluoro-persistence*
+
+Highlights and their notes are stored per file in `g:fluoro_storage_dir`, one
+JSON file per file path.  They are saved on |BufWritePost|, |BufUnload|, and |VimLeavePre|,
+and restored on |BufReadPost|.  Buffers without a name and special buffers
+(quickfix, terminal, help, ...) are never persisted.
+
+g:fluoro_storage_dir                                   *g:fluoro_storage_dir*
+  Directory for the JSON files.  Default: `~/.vim/fluoro`.
+
+g:fluoro_autosave                                         *g:fluoro_autosave*
+  When 1 (the default), save automatically.  When 0, only |:FluoroSave| and
+  the autocommands that remain enabled will write.
+
+g:fluoro_autoload                                         *g:fluoro_autoload*
+  When 1 (the default), restore highlights when a file is read.
+
+Stored positions are line and byte columns.  If a file is changed outside of
+Vim, positions can drift.  Text properties themselves are adjusted by Vim
+while you edit inside Vim.
+
+==============================================================================
+9. CONFIGURATION                                       *fluoro-configuration*
+
+g:fluoro_default_mappings                         *g:fluoro_default_mappings*
+  Install the `,,`, `,n`, `,N`, `]f`, `[f`, and `gF` mappings.  Default: 1.
+
+g:fluoro_current_color                               *g:fluoro_current_color*
+  The initial pen color used by |:FluoroHighlight| without an argument.
+  Default: the first palette color (yellow).
+
+g:fluoro_combine                                           *g:fluoro_combine*
+  Combine fluoro highlighting with syntax highlighting.  Default: 1.
+
+g:fluoro_priority                                         *g:fluoro_priority*
+  Priority for the text property types.  Default: 10.
+
+g:fluoro_wrap                                                 *g:fluoro_wrap*
+  When 1, |:FluoroNext| and |:FluoroPrev| wrap around.  Default: 1.
+
+g:fluoro_note_cursor                                   *g:fluoro_note_cursor*
+  Show notes when the cursor rests on a highlight (terminal fallback for
+  mouse hovering).  Default: 1.
+
+g:fluoro_note_mouse                                     *g:fluoro_note_mouse*
+  Use the mouse to show notes: |<MouseMove>| hovering in the GUI, plus a
+  <LeftMouse> click mapping when that key is not already mapped.  Default: 1.
+
+g:fluoro_note_prefix                                   *g:fluoro_note_prefix*
+  Text prepended to a note in the single-line styles.  Default: `✎ `.
+
+g:fluoro_note_label                                     *g:fluoro_note_label*
+  Label on the top border of the `block` style.  Default: `Note`.
+
+g:fluoro_note_style                                     *g:fluoro_note_style*
+  Note frame.  Default: `block`, the multi-line box described in
+  |fluoro-notes|.  Single-line presets: `plain`, `bracket`, `square`, `bar`,
+  `pill`, `box`, `box-bottom`, `double`, `dashed`, `callout`, `arrow`,
+  `notch`, `notch-triangle`, `notch-double`, `notch-heavy`,
+  `notch-diagonal`.  May also be a two-item List `[left, right]` for a custom
+  frame, or a one-item List / String for a left prefix only.
+
+Statusline:
+  Use `fluoro#status()` in the statusline.  It returns `F{count}` for the
+  current buffer, or an empty string when there are no highlights: >
+    set statusline+=%{fluoro#status()}
+<
+==============================================================================
+10. FUNCTIONS                                              *fluoro-functions*
+
+fluoro#add({sl}, {sc}, {el}, {ec}, {color} [, {bufnr}])
+                                            *fluoro#add()*
+  Add a highlight from start line/column to end line/column.  Columns are
+  bytes and the end column is exclusive.  Returns the property id or 0.
+
+fluoro#toggle_range({sl}, {sc}, {el}, {ec}, {color} [, {bufnr}])
+                                            *fluoro#toggle_range()*
+  Add, recolor, or remove a highlight.  Returns the id, -1 when removed, or 0
+  on failure.
+
+fluoro#erase_cursor()                       *fluoro#erase_cursor()*
+fluoro#erase_range({sl}, {sc}, {el}, {ec} [, {bufnr}])
+                                            *fluoro#erase_range()*
+  Remove highlights under the cursor or intersecting a range.
+
+fluoro#clear([{bufnr}])                     *fluoro#clear()*
+  Remove all fluoro highlights from a buffer.
+
+fluoro#items([{bufnr}])                     *fluoro#items()*
+  Return a sorted List of highlights.  Each item has `id`, `color`,
+  `start_lnum`, `start_col`, `end_lnum`, and `end_col`.
+
+fluoro#count([{bufnr}])                     *fluoro#count()*
+fluoro#status()                             *fluoro#status()*
+  Number of highlights, and a statusline-friendly string.
+
+fluoro#cycle_or_toggle()                    *fluoro#cycle_or_toggle()*
+  The behavior of `,,` in Normal mode.
+
+fluoro#cycle_color()                        *fluoro#cycle_color()*
+  Cycle the color of the highlight under the cursor.
+
+fluoro#first_color()                        *fluoro#first_color()*
+  The first color of the cycle (classic yellow unless overridden).
+
+fluoro#colors()                             *fluoro#colors()*
+  The palette in cycling order.
+
+fluoro#set_note({id}, {text} [, {bufnr}])   *fluoro#set_note()*
+  Attach {text} to a highlight id.  An empty {text} removes the note.
+
+fluoro#get_note({id} [, {bufnr}])           *fluoro#get_note()*
+  Return the note for a highlight id.
+
+fluoro#note_cursor()                        *fluoro#note_cursor()*
+fluoro#note_cursor_leave()                  *fluoro#note_cursor_leave()*
+  Show the note under the cursor, and hide it when the cursor leaves.
+
+fluoro#note_hover()                         *fluoro#note_hover()*
+  Show the note under the mouse pointer (GUI).
+
+fluoro#note_hide()                          *fluoro#note_hide()*
+  Hide the currently displayed note.
+
+fluoro#save([{bufnr}])                      *fluoro#save()*
+fluoro#load([{bufnr}])                      *fluoro#load()*
+  Persistence wrappers.
+
+==============================================================================
+11. LICENSE                                                 *fluoro-license*
+
+MIT License.  See the LICENSE file in the repository.
+
+ vim:tw=78:ts=8:noet:ft=help:norl:
